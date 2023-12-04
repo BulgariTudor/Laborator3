@@ -1,0 +1,302 @@
+PUNCTUL A
+#include <iostream>
+
+using namespace std;
+
+class Coordonate3D {
+private:
+    double x, y, z;
+
+public:
+    // Constructor
+    Coordonate3D(double xVal = 0, double yVal = 0, double zVal = 0) : x(xVal), y(yVal), z(zVal) {}
+
+    // Supraîncărcarea operatorului de adunare
+    Coordonate3D operator+(const Coordonate3D& coord) const {
+        return Coordonate3D(x + coord.x, y + coord.y, z + coord.z);
+    }
+
+    // Supraîncărcarea operatorului de scădere
+    Coordonate3D operator-(const Coordonate3D& coord) const {
+        return Coordonate3D(x - coord.x, y - coord.y, z - coord.z);
+    }
+
+    // Supraîncărcarea operatorului de atribuire
+    void operator=(const Coordonate3D& coord) {
+        x = coord.x;
+        y = coord.y;
+        z = coord.z;
+    }
+
+    // Funcții prietene pentru operatorii de comparație
+    friend bool operator==(const Coordonate3D& coord1, const Coordonate3D& coord2);
+    friend bool operator!=(const Coordonate3D& coord1, const Coordonate3D& coord2);
+    friend bool operator<(const Coordonate3D& coord1, const Coordonate3D& coord2);
+    friend bool operator>(const Coordonate3D& coord1, const Coordonate3D& coord2);
+
+    // Supraîncărcarea operatorului de afișare
+    friend ostream& operator<<(ostream& out, const Coordonate3D& coord);
+};
+
+// Definirea funcțiilor prietene pentru operatorii de comparație
+bool operator==(const Coordonate3D& coord1, const Coordonate3D& coord2) {
+    return (coord1.x == coord2.x) && (coord1.y == coord2.y) && (coord1.z == coord2.z);
+}
+
+bool operator!=(const Coordonate3D& coord1, const Coordonate3D& coord2) {
+    return !(coord1 == coord2);
+}
+
+bool operator<(const Coordonate3D& coord1, const Coordonate3D& coord2) {
+    return (coord1.x < coord2.x) && (coord1.y < coord2.y) && (coord1.z < coord2.z);
+}
+
+bool operator>(const Coordonate3D& coord1, const Coordonate3D& coord2) {
+    return coord2 < coord1;
+}
+
+// Supraîncărcarea operatorului de afișare
+ostream& operator<<(ostream& out, const Coordonate3D& coord) {
+    out << "(" << coord.x << ", " << coord.y << ", " << coord.z << ")";
+    return out;
+}
+
+int main() {
+    Coordonate3D coord1(1, 2, 3);
+    Coordonate3D coord2(4, 5, 6);
+
+    Coordonate3D coordSum = coord1 + coord2;
+    Coordonate3D coordDiff = coord1 - coord2;
+
+    cout << "Suma coordonatelor: " << coordSum << endl;
+    cout << "Diferenta coordonatelor: " << coordDiff << endl;
+
+    // Exemplu de comparare între coordonate
+    if (coord1 == coord2) {
+        cout << "Coordonatele sunt egale." << endl;
+    } else {
+        cout << "Coordonatele nu sunt egale." << endl;
+    }
+
+    return 0;
+}
+
+
+
+PUNCTUL B
+
+
+#include <iostream>
+#include <stdexcept>
+
+using namespace std;
+
+class Queue {
+private:
+    struct Node {
+        int data;
+        Node* next;
+    };
+
+    Node* front;
+    Node* rear;
+
+public:
+    Queue() : front(nullptr), rear(nullptr) {}
+
+    // Destructor pentru a elibera memoria alocată dinamic
+    ~Queue() {
+        while (front != nullptr) {
+            Node* temp = front;
+            front = front->next;
+            delete temp;
+        }
+    }
+
+    // Operatorul "+" pentru adunarea a două cozi
+    Queue operator+(const Queue& other) const {
+        Queue result = *this; // Se creează o coadă nouă și se copiază elementele primei cozi în ea
+
+        Node* temp = other.front;
+        while (temp != nullptr) {
+            result.enqueue(temp->data); // Se adaugă elementele din a doua coadă în coada rezultată
+            temp = temp->next;
+        }
+
+        return result;
+    }
+
+    // Operatorul "=" pentru atribuirea a două cozi
+    Queue& operator=(const Queue& other) {
+        if (this == &other) {
+            return *this;
+        }
+
+        // Se șterge conținutul curent al cozii
+        while (front != nullptr) {
+            Node* temp = front;
+            front = front->next;
+            delete temp;
+        }
+
+        front = nullptr;
+        rear = nullptr;
+
+        // Se copiază elementele din coada "other" în coada curentă
+        Node* temp = other.front;
+        while (temp != nullptr) {
+            enqueue(temp->data);
+            temp = temp->next;
+        }
+
+        return *this;
+    }
+
+    // Funcția de adăugare a unui element în coadă
+    void enqueue(int value) {
+        Node* newNode = new Node{ value, nullptr };
+
+        if (rear == nullptr) {
+            front = rear = newNode;
+        } else {
+            rear->next = newNode;
+            rear = newNode;
+        }
+    }
+
+    // Funcția de eliminare a unui element din coadă
+    void dequeue() {
+        if (front == nullptr) {
+            throw logic_error("Queue is empty");
+        }
+
+        Node* temp = front;
+        front = front->next;
+        delete temp;
+
+        if (front == nullptr) {
+            rear = nullptr;
+        }
+    }
+
+    // Funcție pentru calculul normei elementelor cozii
+    int calculateNorm() const {
+        Node* temp = front;
+        int norm = 0;
+
+        while (temp != nullptr) {
+            norm += temp->data * temp->data;
+            temp = temp->next;
+        }
+
+        return norm;
+    }
+
+    // Funcții prietene pentru operatorii de comparație
+    friend bool operator==(const Queue& q1, const Queue& q2);
+    friend bool operator!=(const Queue& q1, const Queue& q2);
+    friend bool operator<(const Queue& q1, const Queue& q2);
+    friend bool operator>(const Queue& q1, const Queue& q2);
+
+    // Suprascrierea operatorului de ieșire (<<) pentru afișarea unei cozi
+    friend ostream& operator<<(ostream& os, const Queue& q);
+
+    // Suprascrierea operatorului de intrare (>>) pentru inserarea elementelor în coadă
+    friend istream& operator>>(istream& is, Queue& q);
+};
+
+// Operatorul de comparare "=="
+bool operator==(const Queue& q1, const Queue& q2) {
+    return q1.calculateNorm() == q2.calculateNorm();
+}
+
+// Operatorul de comparare "!="
+bool operator!=(const Queue& q1, const Queue& q2) {
+    return !(q1 == q2);
+}
+
+// Operatorul de comparare "<"
+bool operator<(const Queue& q1, const Queue& q2) {
+    return q1.calculateNorm() < q2.calculateNorm();
+}
+
+// Operatorul de comparare ">"
+bool operator>(const Queue& q1, const Queue& q2) {
+    return q1.calculateNorm() > q2.calculateNorm();
+}
+
+// Suprascrierea operatorului de ieșire (<<) pentru afișarea unei cozi
+ostream& operator<<(ostream& os, const Queue& q) {
+    Queue::Node* temp = q.front;
+
+    while (temp != nullptr) {
+        os << temp->data << " ";
+        temp = temp->next;
+    }
+
+    return os;
+}
+
+// Suprascrierea operatorului de intrare (>>) pentru inserarea elementelor în coadă
+istream& operator>>(istream& is, Queue& q) {
+    int value;
+    is >> value;
+    q.enqueue(value);
+    return is;
+}
+
+int main() {
+    Queue queue1, queue2;
+
+    cout << "Introduceti elementele pentru prima coada (separate prin spatiu, 0 pentru a incheia): ";
+    while (true) {
+        int value;
+        cin >> value;
+        if (value == 0) {
+            break;
+        }
+        queue1.enqueue(value);
+    }
+
+    cout << "Introduceti elementele pentru a doua coada (separate prin spatiu, 0 pentru a incheia): ";
+    while (true) {
+        int value;
+        cin >> value;
+        if (value == 0) {
+            break;
+        }
+        queue2.enqueue(value);
+    }
+
+    // Testare operatorilor de comparare
+    if (queue1 == queue2) {
+        cout << "Cele doua cozi au aceeasi norma." << endl;
+    } else {
+        cout << "Cele doua cozi nu au aceeasi norma." << endl;
+    }
+
+    if (queue1 != queue2) {
+        cout << "Cele doua cozi au norme diferite." << endl;
+    }
+
+    if (queue1 < queue2) {
+        cout << "Norma primei cozi este mai mica decat cea a celei de-a doua cozi." << endl;
+    }
+
+    if (queue1 > queue2) {
+        cout << "Norma primei cozi este mai mare decat cea a celei de-a doua cozi." << endl;
+    }
+
+    // Testare operatorilor de adunare și atribuire
+    Queue queue3 = queue1 + queue2;
+    cout << "Rezultatul adunarii celor doua cozi este: " << queue3 << endl;
+
+    queue3 = queue2; // Testare operatorului de atribuire
+    cout << "Cea de-a doua coada atribuita celei de-a treia cozi: " << queue3 << endl;
+
+    // Testare operatorilor de ieșire și intrare
+    cout << "Introduceti elemente pentru a patra coada (separate prin spatiu, 0 pentru a incheia): ";
+    cin >> queue3;
+    cout << "Elementele introduse in a patra coada sunt: " << queue3 << endl;
+
+    return 0;
